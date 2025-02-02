@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+    <script src="/js/home.js" type="module"></script>
+    <title>MediaManager Home</title>
+    <link rel="stylesheet" href="/css/home.css">
+    <head>
+        <h1>MediaManager Homepage</h1>
+        <h2 style="color:red" id="unsupported" hidden>Unsupported version, you will be unable to browse this database untill you migrate.</h2>
+        <div>
+            <h5>
+                <a>API Version: </a>
+                <a id="api_version"></a>
+                <br>
+                <a>DB Version : </a>
+                <a id="db_version"></a>
+            </h5>
+        </div>
+        <h4 id="version"></h4>
+    </head>
+    <body>
+        <div>
+            <a href="browse">Browser (Beta)</a><br>
+            <a href="/collection">Collection page (Beta)</a><br>
+        </div>
+        <h2>API Reference</h2>
+
+        <h3>Get file content</h3>
+        <a href="/api/1/content?id=1&update=false">/api/1/content</a>
+        <p>Method: GET</p>
+        <p>Query parameters</p>
+        <li>path: string => File path</li>
+        <li>id: string => File id</li>
+        <li>update: boolean => Should there be a update, default: true</li>
+        <p>Only one of 'path' or 'file id' may exist</p>
+        <p>This also modifies the 'last viewed' date</p>
+        <p>API errors will be returned if the file doesn't exist on database or cant be accessed on disk</p>
+
+        <h3>Get file info</h3>
+        <a href="/api/1/files?id=1">/api/1/files</a>
+        <p>Method: GET</p>
+        <p>Query parameters</p>
+        <li>id: int => File ids, can have multiple</li>
+        <li>path: string => File path, can have multiple</li>
+
+        <h3>Update file info</h3>
+        <a>/api/1/update</a>
+        <p>Method: POST</p>
+        <p>Post parameters</p>
+        <li>Id: int => File ids, cant exist with 'path', this value is not updated.</li>
+        <li>Path: string => File path, cant exist with 'id', this value is not updated.</li>
+        <li>Stars: int (0-5) => New star value</li>
+        <li>AddTags: string[] => Tags to add</li>
+        <li>RemTags: string[] => Tags to remove</li>
+
+        <h3>Search for files</h3>
+        <a href="/api/1/search?tag_whitelist=test">/api/1/search</a>
+        <p>Method: GET</p>
+        <p>Query parameters</p>
+        <!-- I wrote this like a goofy goober -->
+        <li>path: string => This path is checked against all database paths</li>
+        <li>path_re: string => Regex search on each path</li>
+        <li>tag_whitelist: string => Whitelisted tags</li>
+        <li>tag_blacklist: string => Blacklisted tags</li>
+        <li>count: int => Max number of elements to return</li>
+        <li>index: int => Search index to start at</li>
+        
+        <h3>Delete a tag</h3>
+        <a>/api/1/deletetag</a>
+        <p>Method: DELETE</p>
+        <p>Query parameters</p>
+        <li>tag: string => Tag to remove from all files</li>
+
+        <h3>Delete a file</h3>
+        <a>/api/1/deletetag</a>
+        <p>Method: DELETE</p>
+        <p>This only deletes the file from the database, not from disk</p>
+        <p>Query parameters</p>
+        <li>id: int => File id to delete</li>
+
+        <h3>Get file list</h3>
+        <a><b>DEPRECATED: Use /api/1/search</b></a>
+        <a href="/api/1/list?index=50&count=25">/api/1/list</a><br>
+        <p>Method: GET</p>
+        <p>Query parameters</p>
+        <li>count: int => Max number of files to return. Default: 50, Max: 200</li>
+        <li>index: int => Index to start at</li>
+
+        <h3>Get all tags</h3>
+        <a href="/api/1/tags">/api/1/tags</a>
+        <p>Method: GET</p>
+
+        <h3>Add file tag</h3>
+        <a href="/api/1/addtag">/api/1/addtag</a>
+        <p>Method: GET</p>
+        <p>Query parameters</p>
+        <li>tag: string => Tag to add</li>
+
+        <h3>Update file last viewed time</h3>
+        <a href="/api/1/viewed">/api/1/viewed</a>
+        <p>Method: GET</p>
+        <p>Query parameters</p>
+        <li>id: number => File ID to update</li>
+
+        <h3>Get a random file</h3>
+        <a href="/api/1/random">/api/1/random</a>
+        <p>Method: GET</p>
+
+        <h3>Get version info</h3>
+        <a href="/api/1/version">/api/1/version</a>
+        <p>Method: GET</p>
+        <table>
+            <thead>
+                <tr>
+                    <td>Major Version</td>
+                    <td>Code name</td>
+                    <td>Source</td>
+                    <td>Note</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1.XrX</td>
+                    <td>JustConfusing</td>
+                    <td><a href="https://www.youtube.com/watch?v=hHr_hmt30PU">Just Confusing - Crystal Lake</a></td>
+                    <td>Support will be dropped in next update</td>
+                </tr>
+                <tr>
+                    <td>2.XrX</td>
+                    <td>InTheHouseOfLeaves</td>
+                    <td><a href="https://www.youtube.com/watch?v=FTgaNAZzFc8">In The House Of Leaves - Ghost Atlas</a></td>
+                    <td>Support will be dropped soon.</td>
+                </tr>
+                <tr>
+                    <td>3.0rX</td>
+                    <td>EcstacyInGrief</td>
+                    <td><a href="https://www.youtube.com/watch?v=YBhDWJkM8Wg">Ecstacy In Grief - Cane Hill</a></td>
+                    <td>Latest</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

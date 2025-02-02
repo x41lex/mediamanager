@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<link rel="stylesheet" type="text/css" href="/css/browse.css">
+<script src="/js/browse.js" type="module"></script>
+<html>
+
+<body>
+    <title>MediaManager Browser</title>
+    <header>
+        <h1>File Browser</h1>
+    </header>
+    <button id="prev_page">
+        Back
+    </button>
+    <button id="next_page">
+        Next
+    </button>
+    <form style="display:inline;" onsubmit="return false">
+        <button id="submit" type="submit">
+            Execute
+        </button>
+        <label>
+            Query
+            <input id="query" type="text">
+        </label>
+        </button>
+        <label>
+            +Tags
+            <input id="wl_tags" type="text">
+        </label>
+        <label>
+            -Tags
+            <input id="bl_tags" type="text">
+        </label>
+        <label>
+            Sort By
+            <select id="method">
+                <option value="none">None</option>
+                <option value="size">Size</option>
+                <option value="stars" selected>Stars</option>
+                <option value="date">Date</option>
+                <option value="id">Id</option>
+                <option value="random">Random</option>
+            </select>
+        </label>
+        <label>
+            Sort DESC
+            <input type="checkbox" id="reverse_sort" checked />
+        </label>
+        <label>
+            Open in new tab
+            <input type="checkbox" id="open_in_new" checked>
+        </label>
+        <label>
+            Count
+            <select id="count">
+                <option value="25">25</option>
+                <option value="50" selected="selected">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+            </select>
+        </label>
+        <button id="random_button" hidden>Random</button>
+        <label>
+            Popup
+            <input type="checkbox" id="pupup_mode" checked></input>
+        </label>
+
+    </form>
+    <table order="desc" order-by="0">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Path</th>
+                <th>Tags</th>
+                <th>Stars</th>
+                <th>Last Viewed</th>
+                <th>Size</th>
+            </tr>
+        </thead>
+        <tbody id="files">
+
+        </tbody>
+    </table>
+    <!-- File Popup -->
+    <div id="filePopup" class="modal">
+        <div class="modal-content">
+            <span class="close" id="modalClose">&times;</span>
+            <iframe id="modalDisplay" class="modalIFrame">
+
+            </iframe>
+        </div>
+    </div>
+</body>
+
+</html>

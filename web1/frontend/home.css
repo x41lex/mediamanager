@@ -1,0 +1,36 @@
+body {
+    background-color: #282a36;
+    color: #f8f8f2;
+}
+
+a:link {
+    color: #8be9fd;
+}
+
+a:visited {
+    color: #bd93f9;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+tr {
+    color: #f8f8f2;
+    border-color: #f8f8f2;
+    border: solid;
+    border-width: 1px 0;
+}
+
+tr:first-child {
+    border-top: none;
+}
+
+tr:last-child {
+    border-bottom: none;
+}
+
+tr:nth-child(even) {
+    background-color: #44475a;
+}

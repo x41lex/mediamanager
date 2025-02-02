@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+</html>
+<style>
+    body {
+        background-color: #282a36;
+    }
+
+    h1 {
+        color: #f8f8f2;
+    }
+
+    label {
+        color: #f8f8f2
+    }
+
+    input {
+        background-color: #44475a;
+        border: none;
+        color: #f8f8f2;
+        width: 25%;
+    }
+
+    button {
+        background-color: #44475a;
+        border: solid;
+        border-color: #282a36;
+        color: #f8f8f2;
+        width: 25%;
+    }
+
+    button:hover {
+        color: #8be9fd;
+    }
+</style>
+
+<body>
+    <h1>Login</h1>
+    <form method="post" action="/authenticate">
+        <input type="text" id="username" placeholder="Username" name="username">
+        <br>
+        <input type="password" id="password" placeholder="Password" name="password">
+        <input type="hidden" name="redirect_to" id="redirect_to" value="/"><br>
+        <button type="submit">Login</button>
+    </form>
+</body>
+
+</html>

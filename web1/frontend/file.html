@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="/css/file.css">
+<script src="/js/file.js" type="module"></script>
+<header>
+    <h1>File Viewer (Alpha)</h1>
+    <h2 id="path"></h2>
+</header>
+<div id="col_controls" hidden>
+    <label for="col_names">Show names</label>
+    <input type="checkbox" name="col_names" id="col_show_names">
+</div>
+<!--
+    TODO: 
+      Navigate through image (Maybe)
+      Update & Display tags better
+    -->
+<div id="mediaContainer">
+
+</div>
+<div id="controls">
+    <button id="viewed">Mark Viewed</button>
+    <div id="author_div" hidden>
+        <a>Author:</a>
+        <span id="author_tags"></span>
+    </div>
+    <div id="collection_div" hidden>
+        <a>Collection:</a>
+        <span id="col_tags"></span>
+        <button id="col_back" hidden>Prev</button>
+        <button id="col_next" hidden>Next</button>
+        <button id="col_show_all">Show all</button>
+        <a>Index:</a><a id="col_index"></a>
+    </div>
+    <div>
+        <a>Tags:</a>
+        <span id="tags"></span>
+    </div>
+    <a id="size"></a><br>
+    <a id="last_view"></a><br>
+    <a>Add Tags</a>
+    <span id="all_tags">
+    </span><br>
+    <select id="stars">
+        <option id="stars_5" value="5">5 Stars</option>
+        <option id="stars_4" value="4">4 Stars</option>
+        <option id="stars_3" value="3">3 Stars</option>
+        <option id="stars_2" value="2">2 Stars</option>
+        <option id="stars_1" value="1">1 Stars</option>
+        <option id="stars_0" value="0">Unset Stars</option>
+    </select>
+    <button id="stars_submit">Update File</button><br><br>
+    <label>
+        Show Authors
+        <input type="checkbox" id="show_authors"></input>
+    </label><br>
+    <label>
+        Show Collections
+        <input type="checkbox" id="show_collections"></input>
+    </label><br>
+    <label>
+        New Tag
+        <input type="text" id="add_tag" value="" spellcheck="true">
+        <button id="new_tag_sub">Submit</button>
+    </label><br>
+    <button id="random_button">Random file</button>
+</div>
+</html>

@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { apiGetRandomFile, apiSearch, bytesToHumanReadableSize } from "./api.js";
+import { apiGetRandomFile, apiSearch, bytesToHumanReadableSize, getCookie, setCookie } from "./api.js";
 // TODO: Set cookies based on what we've recently look at & our recent settings os we can actually make this work
 class FileManager {
     // TODO: Popup window
@@ -35,7 +35,8 @@ class FileManager {
         this.files = [];
         this.index = 0;
     }
-    addMmFile(file) {
+    addMmFile(index) {
+        const file = this.files[index];
         let tr = document.createElement("tr");
         let name = document.createElement("td");
         name.innerText = `${file.getId()}`;
@@ -46,6 +47,7 @@ class FileManager {
         pathA.innerText = file.getPath();
         pathA.href = `/file?id=${file.getId()}`;
         pathA.onclick = () => {
+            // TODO: Set a cookie for the next & prev files so we can do something on the file page.
             this.openFile(`/file?id=${file.getId()}`);
             return false;
         };
@@ -117,8 +119,7 @@ class FileManager {
     }
     doApiRequest() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(this.sortMethod);
-            this.files = yield apiSearch({
+            const query = {
                 Index: this.index,
                 Count: this.file_count,
                 TagWhitelist: this.tag_whitelist.length == 0 ? undefined : this.tag_whitelist,
@@ -126,7 +127,15 @@ class FileManager {
                 Path: this.query == "" ? undefined : this.query,
                 Sort: this.sortMethod,
                 SortReverse: this.sortReverse,
+            };
+            setCookie("search", JSON.stringify(query), {
+                Secure: true
             });
+            this.files = yield apiSearch(query);
+            const idx = this.files.map((v) => {
+                return v.getId();
+            });
+            setCookie("file_idx", JSON.stringify(idx));
         });
     }
     refresh() {
@@ -137,9 +146,9 @@ class FileManager {
             yield this.doApiRequest();
             // Clear table
             this.table.innerHTML = "";
-            this.files.forEach(file => {
-                this.addMmFile(file);
-            });
+            for (let i = 0; i != this.files.length; i++) {
+                this.addMmFile(i);
+            }
             this.index = this.file_count;
         });
     }
@@ -150,9 +159,9 @@ class FileManager {
             yield this.doApiRequest();
             // Clear table
             this.table.innerHTML = "";
-            this.files.forEach(file => {
-                this.addMmFile(file);
-            });
+            for (let i = 0; i != this.files.length; i++) {
+                this.addMmFile(i);
+            }
             this.index += this.file_count;
         });
     }
@@ -221,12 +230,36 @@ class FileManager {
         this.file_count = count;
     }
     openFile(url) {
+        console.log(`Open: ${url}`);
         if (this.modalMode) {
             this.modal.style.display = "flex";
             this.iframe.src = url;
         }
         else {
             window.location.href = url;
+        }
+    }
+    setSearchQuery(qr) {
+        if (qr.Path) {
+            this.setQuery(qr.Path);
+        }
+        if (qr.TagWhitelist) {
+            this.setWhitelistTags(qr.TagWhitelist);
+        }
+        if (qr.TagBlacklist) {
+            this.setBlacklistTags(qr.TagBlacklist);
+        }
+        if (qr.Index) {
+            this.index = qr.Index;
+        }
+        if (qr.Count) {
+            this.setCount(qr.Count);
+        }
+        if (qr.Sort) {
+            this.setSortMethod(qr.Sort);
+        }
+        if (qr.SortReverse) {
+            this.sortReverse = qr.SortReverse;
         }
     }
 }
@@ -258,7 +291,7 @@ window.onload = () => {
     openInNewPage.onclick = () => {
         fh.openInNewTab = !fh.openInNewTab;
         const paths = document.getElementsByClassName("path");
-        for (let i = 0; i != paths.length; i++) {
+        for (const i in paths) {
             if (fh.openInNewTab) {
                 // Open in new tab
                 paths[i].target = "_blank";
@@ -269,6 +302,29 @@ window.onload = () => {
             }
         }
     };
+    const search = getCookie("search");
+    if (search) {
+        const opts = JSON.parse(search);
+        fh.setSearchQuery(opts);
+        if (opts.Path) {
+            queryinput.value = opts.Path;
+        }
+        if (opts.Sort) {
+            sortMethod.value = opts.Sort;
+        }
+        if (opts.TagWhitelist) {
+            wltaginput.value = opts.TagWhitelist.join(",");
+        }
+        if (opts.TagBlacklist) {
+            bltaginput.value = opts.TagBlacklist.join(",");
+        }
+        if (opts.Count) {
+            count.value = `${opts.Count}`;
+        }
+        if (opts.SortReverse) {
+            sortReverse.checked = opts.SortReverse;
+        }
+    }
     submitbutton.onclick = () => {
         if (sortMethod.value != "none" && sortMethod.value != "size" && sortMethod.value != "stars" && sortMethod.value != "date" && sortMethod.value != "id" && sortMethod.value != "random") {
             alert(`Invalid sortMethod: ${sortMethod}`);

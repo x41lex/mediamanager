@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"mediamanager/filedb"
@@ -30,7 +31,8 @@ type DatabaseArgs struct {
 	SelectNoHash    bool     `arg:"--selectnohash" help:"select files with no hash"`
 	SelectNoSize    bool     `arg:"--selectnosize" help:"select files with no size"`
 	// ** ACTIONS **
-	DisplayFiles bool `arg:"-d,--display" help:"Action. Display files selected"`
+	DisplayFiles bool   `arg:"-d,--display" help:"Action. Display files selected"`
+	WriteJson    string `arg:"-j,--json" help:"Output files as a JSON array"`
 	// * MODIFY *
 	AddTag    []string `arg:"--tag,separate" help:"Action. tags to add to selected entries"`
 	SetStars  int      `arg:"--stars" help:"Action. stars to set on selected file" default:"-1"`
@@ -58,7 +60,7 @@ func (d *DatabaseArgs) Verify(p *arg.Parser) bool {
 		return false
 	}
 	// Ensure select id is the only select used.
-	if len(d.SelectId) > 0 && (len(d.SelectTags) > 0 || d.SelectPath != "" || len(d.SelectStars) > 0 || !d.SelectDateUnset || d.SelectMissing || d.SelectNoHash || d.SelectNoSize) {
+	if len(d.SelectId) > 0 && (len(d.SelectTags) > 0 || d.SelectPath != "" || len(d.SelectStars) > 0 || d.SelectDateUnset || d.SelectMissing || d.SelectNoHash || d.SelectNoSize) {
 		p.FailSubcommand("--selectid cannot be combined with other select arguments", "database")
 		return false
 	}
@@ -77,7 +79,7 @@ func (d *DatabaseArgs) HasSelect() bool {
 
 // Has a action argument
 func (d *DatabaseArgs) HasAction() bool {
-	return d.DisplayFiles || len(d.AddTag) > 0 || d.SetStars != -1 || len(d.RemoveTag) > 0 || d.Remove || d.RemoveFromDisk || d.UpdateFileHash || d.UpdateFileSize || len(d.RemoveTagFromDb) > 0
+	return d.DisplayFiles || len(d.AddTag) > 0 || d.SetStars != -1 || len(d.RemoveTag) > 0 || d.Remove || d.RemoveFromDisk || d.UpdateFileHash || d.UpdateFileSize || len(d.RemoveTagFromDb) > 0 || d.WriteJson != ""
 }
 
 // Execute a database operation live
@@ -338,6 +340,16 @@ func DbSelect(d *ArgList, db *filedb.FileDb) ([]*filedb.File, error) {
 	return files, nil
 }
 
+type jsonFile struct {
+	Id         int
+	Tags       []string
+	Path       string
+	LastViewed string
+	Stars      int
+	Size       int64
+	Hash       string
+}
+
 // Parse the database arguments
 func ParseDatabase(d *ArgList, p *arg.Parser) {
 	if !d.Database.Verify(p) {
@@ -461,8 +473,32 @@ func ParseDatabase(d *ArgList, p *arg.Parser) {
 			totalSize += int(v.GetSize())
 		}
 		fmt.Printf("Total size is %s\n", bytesToString(float64(totalSize)))
-	}
-	if d.Database.Dry {
+		return
+	} else if d.Database.WriteJson != "" {
+		jFiles := make([]*jsonFile, len(files))
+		for i, v := range files {
+			jFiles[i] = &jsonFile{
+				Id:         v.GetId(),
+				Tags:       v.GetTags(),
+				Path:       v.GetPath(),
+				LastViewed: v.GetLastPlayTime().UTC().Format(time.RFC3339),
+				Stars:      int(v.GetStars()),
+				Size:       v.GetSize(),
+				Hash:       v.GetHash(),
+			}
+		}
+		jData, err := json.MarshalIndent(jFiles, "", "  ")
+		if err != nil {
+			fmt.Printf("! Failed to convert files to JSON? Report this issue: %v\n", err)
+			return
+		}
+		err = os.WriteFile(d.Database.WriteJson, jData, 0666)
+		if err != nil {
+			fmt.Printf("! Failed to write to file '%s': %v\n", d.Database.WriteJson, err)
+			return
+		}
+		fmt.Printf("+ Wrote %d files to '%s'\n", len(jFiles), d.Database.WriteJson)
+	} else if d.Database.Dry {
 		DbDryExecute(d, files)
 	} else {
 		DbLiveExecute(d, db, files)

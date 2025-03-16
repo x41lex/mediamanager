@@ -99,6 +99,7 @@ func (a *DbApi1) serveFileOrApiError(w http.ResponseWriter, r *http.Request, pat
 //
 // Query Params:
 //   - id: File id
+//   - update: Should the file last viewed date be updated (true/false), default: false
 //
 // Auth: Required
 //
@@ -127,7 +128,7 @@ func (a *DbApi1) ServeFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// If this is a HEAD request we never update (We don't get any content.)
-	if r.Method == http.MethodGet && qr.Get("update") != "false" {
+	if r.Method == http.MethodGet && qr.Get("update") == "true" {
 		file.MarkFileRead()
 		a.db.UpdateFile(file)
 	}
@@ -210,30 +211,6 @@ func (a *DbApi1) GetFileInfo(w http.ResponseWriter, r *http.Request) {
 	a.writeApiData(w, r, a.filesToApiFile(files))
 }
 
-// Serve a list of files info
-//
-// Method: GET
-//
-// URL: /api/1/directory
-//
-// Auth: Required
-//
-// Headers: None
-//
-// Query params:
-//   - directory: A directory
-//   - full: Boolean value, default false, should the entire file info be returned or just the file names
-//   - count: Number of files to return, default 50
-//   - index: File index to start at, default: 0
-//
-// Returns: JSON filedb.File array & Total file count
-//
-// Error: File not found
-func (a *DbApi1) GetDirectoryInfo(w http.ResponseWriter, r *http.Request) {
-	// This should *never* be called until I implement it.
-	panic("NOT IMPLEMENTED")
-}
-
 // Update a file
 //
 // Method: POST
@@ -254,8 +231,8 @@ func (a *DbApi1) GetDirectoryInfo(w http.ResponseWriter, r *http.Request) {
 // Error: 'Stars' field invalid, 'Path', or 'Id' references invalid file
 func (a *DbApi1) UpdateFile(w http.ResponseWriter, r *http.Request) {
 	var file *filedb.File
-	path := r.PostForm.Get("Path")
-	idStr := r.PostForm.Get("Id")
+	path := r.PostFormValue("Path")
+	idStr := r.PostFormValue("Id")
 	if path != "" && idStr != "" {
 		a.writeApiError(w, r, http.StatusBadRequest, "'path' and 'id' values cannot exist together")
 		return
@@ -430,7 +407,7 @@ func (a *DbApi1) DeleteTag(w http.ResponseWriter, r *http.Request) {
 	}
 	err := a.db.RemoveTag(tag)
 	if err != nil {
-		a.writeApiError(w, r, http.StatusInternalServerError, fmt.Sprintf("Failed to remove tag '%s'", tag))
+		a.writeApiError(w, r, http.StatusBadRequest, fmt.Sprintf("Failed to remove tag '%s'", tag))
 		return
 	}
 	a.writeApiData(w, r, nil)
@@ -545,15 +522,15 @@ func (a *DbApi1) GetAllTags(w http.ResponseWriter, r *http.Request) {
 	a.writeApiData(w, r, a.db.GetAllTags())
 }
 
-// Add a tag
+// # Add a tag
 //
-// Method: GET
+// Method: POST
 //
 // Auth: Required
 //
 // Headers: None
 //
-// Query Params: name
+// Query Params: tag
 //
 // Returns: None
 //
@@ -659,6 +636,7 @@ type VersionInfo struct {
 	UpToDate bool
 }
 
+// Deprecated: Use GetStatus
 func (a *DbApi1) GetVersion(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		a.writeApiError(w, r, http.StatusMethodNotAllowed, "Must be a 'GET' request")
@@ -687,6 +665,57 @@ func (a *DbApi1) GetVersion(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type statusData struct {
+	String   string
+	CodeName string
+	Major    int
+	Minor    int
+	Revision int
+	Metadata map[string]any
+}
+
+type statusInfoVersion struct {
+	Database statusData
+	FileDb   statusData
+}
+
+type StatusInfo struct {
+	VersionInfo statusInfoVersion
+	InSafeMode  bool
+}
+
+func (a *DbApi1) GetStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		a.writeApiError(w, r, http.StatusMethodNotAllowed, "Must be a 'GET' request")
+		return
+	}
+	meta, err := a.db.GetMetadata()
+	if err != nil {
+		a.writeApiError(w, r, http.StatusInternalServerError, fmt.Sprintf("Failed to get version from database: %v", err))
+		return
+	}
+	a.writeApiData(w, r, StatusInfo{
+		VersionInfo: statusInfoVersion{
+			FileDb: statusData{
+				String:   filedb.FormatVersion(filedb.MajorVersion, filedb.MinorVersion, filedb.Revision),
+				CodeName: filedb.VersionCodeName,
+				Major:    filedb.MajorVersion,
+				Minor:    filedb.MinorVersion,
+				Revision: filedb.Revision,
+			},
+			Database: statusData{
+				String:   filedb.FormatVersion(meta.MajorVersion, meta.MinorVersion, meta.RevisionVersion),
+				Major:    meta.MajorVersion,
+				Minor:    meta.MinorVersion,
+				Revision: meta.RevisionVersion,
+				CodeName: meta.VersionCodeName,
+				Metadata: meta.Map,
+			},
+		},
+		InSafeMode: a.db.IsSafeMode(),
+	})
+}
+
 func NewFileDbApi(db *filedb.FileDb, mux *http.ServeMux, lm *LoginManager) *DbApi1 {
 	api := &DbApi1{
 		db: db,
@@ -698,11 +727,13 @@ func NewFileDbApi(db *filedb.FileDb, mux *http.ServeMux, lm *LoginManager) *DbAp
 	mux.HandleFunc("/api/1/search", api.SearchFile)
 	mux.HandleFunc("/api/1/deletetag", api.DeleteTag)
 	mux.HandleFunc("/api/1/deletefile", api.DeleteFile)
-	mux.HandleFunc("/api/1/list", api.GetFileList)
 	mux.HandleFunc("/api/1/tags", api.GetAllTags)
 	mux.HandleFunc("/api/1/addtag", api.AddTag)
 	mux.HandleFunc("/api/1/viewed", api.UpdateFileDate)
+	mux.HandleFunc("/api/1/status", api.GetStatus)
+	// Deprecated stuff below.
+	mux.HandleFunc("/api/1/list", api.GetFileList)
 	mux.HandleFunc("/api/1/random", api.GetRandomFile)
-	mux.HandleFunc("/api/1/version", api.GetVersion)
+	//mux.HandleFunc("/api/1/version", api.GetVersion)
 	return api
 }

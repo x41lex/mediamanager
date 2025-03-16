@@ -12,7 +12,7 @@ const MajorVersion int = 3
 const MinorVersion int = 1
 
 // Bug fixes to the Go code that do not impact how the database works, but change now the go code interacts with it, but no changes in the database.
-const Revision int = 2
+const Revision int = 4
 
 // Version code name
 const VersionCodeName string = "EcstacyInGrief"
@@ -24,8 +24,8 @@ func FormatVersion(major, minor, revision int) string {
 func MajorVersionToCodeName(major int) string {
 	switch major {
 	case 1:
-		// Just Confusing - Crystal Lake
-		return "JustConfusing"
+		// Erase Me - Make Them Suffer
+		return "EraseMe"
 	case 2:
 		// In The House Of Leaves - Ghost Atlas
 		return "InTheHouseOfLeaves"
@@ -33,8 +33,8 @@ func MajorVersionToCodeName(major int) string {
 		// Ecstacy In Grief - Cane Hill
 		return "EcstacyInGrief"
 	case 4:
-		// People Watching - 156/Silence
-		return "PeopleWatching"
+		// West Coast - Lana Del Rey
+		return "WestCoast"
 	default:
 		return fmt.Sprintf("<Unsupported version '%d'>", major)
 	}

@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "VersionInfo": {
+            "type": "object",
+            "properties": {
+                "Database": {
+                    "$ref": "status_data.json"
+                },
+                "FileDb": {
+                    "$ref": "status_data.json"
+                }
+            }
+        },
+        "InSafeMode": {
+            "type": "boolean",
+            "description": "Is the database in safe mode"
+        }
+    }
+}

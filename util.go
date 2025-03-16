@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -56,7 +57,7 @@ func bytesToString(b float64) string {
 	return fmt.Sprintf("%.0f", b)
 }
 
-func isImportableFile(path string) bool {
+func isImportableFile(path string, extraExt ...string) bool {
 	ext := filepath.Ext(path)
 	if len(ext) == 0 || ext[0] != '.' {
 		slog.Error("Invalid file, first value was not a dot", "Path", path, "Ext", ext)
@@ -72,6 +73,6 @@ func isImportableFile(path string) bool {
 	case ".webm", ".mp4", ".mov", ".m4v":
 		return true
 	default:
-		return false
+		return slices.Contains(extraExt, ext)
 	}
 }

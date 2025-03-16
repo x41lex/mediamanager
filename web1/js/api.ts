@@ -47,6 +47,11 @@ type versionData = {
     Database: apiVersion
 }
 
+type statusData = {
+    VersionInfo: versionData
+    InSafeMode: boolean
+}
+
 /**
  * A MediaManager File
  */
@@ -109,6 +114,17 @@ export class MMFile {
 
     public getContentUri(): string {
         return `/api/1/content?id=${this.file.Id}`
+    }
+
+    public async getContent(): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            let data = await fetch(this.getContentUri())
+            if(data.status != 200) {
+                reject(`bad status code ${data.statusText}`)
+            }
+            let txt = await data.text();
+            resolve(txt);
+        })
     }
 
     public copy(): MMFile {
@@ -259,7 +275,7 @@ export async function apiUpdateFile(file: MMFile, oldFile?: MMFile): Promise<voi
                 form.append("RemTags", element)
             }
         });
-        console.log("Sending update")
+        console.log(form)
         apiRequest(`/api/1/update`, "POST", form).then((_) => {
             console.log("OK")
             resolve()
@@ -269,7 +285,7 @@ export async function apiUpdateFile(file: MMFile, oldFile?: MMFile): Promise<voi
     })
 }
 
-type searchQuery = {
+export type searchQuery = {
     Path?: string,
     PathRe?: string,
     TagWhitelist?: string[],
@@ -456,14 +472,84 @@ export async function apiGetRandomFile(): Promise<MMFile> {
     })
 }
 
+/**
+ * @deprecated
+ * @returns 
+ */
 export async function apiGetVersion(): Promise<versionData> {
     return new Promise(async (resolve, reject) => {
-        const file = await apiRequest("/api/1/version")
+        let status = await apiGetStatus()
+        console.log(status)
+        console.log("apiGetVersion, ", status.VersionInfo)
+        resolve(status.VersionInfo);
+        return;
+    })
+}
+
+export async function apiGetStatus(): Promise<statusData> {
+    return new Promise(async (resolve, reject) => {
+        const file = await apiRequest("/api/1/status")
         if(file.Code == 200) {
-            resolve(file.Data as versionData)
-            return
+            console.log("apiGetStatus, ", file.Data)
+            resolve(file.Data as statusData)
         } else {
             reject()
         }
     })
+}
+
+export function getCookie(name: string): string|null {
+    let cooks = document.cookie.split(" ")
+    for(const c of cooks) {
+        const sp1 = c.split(";");
+        const sp2 = sp1[0].split("=");
+        if(sp2[0] == name) {
+            return sp2[1]
+        }
+    }
+    return null
+}
+
+type cookieOpts = {
+    MaxAge?: number
+    Partitioned?: boolean
+    Path?: string
+    Expires?: Date
+    Secure?: boolean
+    SameSite?: boolean
+}
+
+export function setCookie(name: string, value: string, opts?: cookieOpts) {
+    let cook = `${name}=${value};`
+    if(opts) {
+        if(opts.MaxAge) {
+            cook += `max-age=${opts.MaxAge}`
+        }
+        if(opts.Partitioned) {
+            cook += "partitioned;"
+        }
+        if(opts.Expires) {
+            cook += `expires=${opts.Expires.toUTCString()};`
+        }
+        if(opts.Secure) {
+            cook += "secure;"
+        }
+        if(opts.SameSite) {
+            cook += "samesite;"
+        }
+        if (opts.Path) {
+            if(opts.Path == "") {
+                cook += "path=/;"
+            } else {
+                cook += `path=${opts.Path};`
+            }
+        }
+    } else {
+        cook += "path=/;"
+    }
+    document.cookie = cook
+}
+
+export function deleteCookie(name: string) {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT`
 }

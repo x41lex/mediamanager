@@ -1,8 +1,6 @@
 # MediaManager
 Database & Web interface for managing various media files
 
-###### I need to write more documentation.
-
 ## Usage & Quickstart
 
 Calling the program will show all arguments
@@ -75,7 +73,7 @@ Depends on browser support, by default imported files are
 - flac
 - wav
 
-You can add more in `util.go` `isImportableFile` function
+You can add more in `util.go` `isImportableFile` functioz
 
 # Database control
 You can use the databbase subcommand for easy database control, you can also just open the database in any database browser you'd like.

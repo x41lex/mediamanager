@@ -1,4 +1,4 @@
-import { MMFile, apiGetFileList, apiGetRandomFile, apiSearch, bytesToHumanReadableSize } from "./api.js"
+import { MMFile, apiGetFileList, apiGetRandomFile, apiSearch, bytesToHumanReadableSize, deleteCookie, getCookie, searchQuery, setCookie } from "./api.js"
 
 // TODO: Set cookies based on what we've recently look at & our recent settings os we can actually make this work
 
@@ -30,7 +30,8 @@ class FileManager {
         this.index = 0
     } 
 
-    private addMmFile(file: MMFile) {
+    private addMmFile(index: number) {
+        const file = this.files[index]
         let tr = document.createElement("tr")
         let name = document.createElement("td")
         name.innerText = `${file.getId()}`
@@ -41,6 +42,7 @@ class FileManager {
         pathA.innerText = file.getPath()
         pathA.href = `/file?id=${file.getId()}`
         pathA.onclick = () => {
+            // TODO: Set a cookie for the next & prev files so we can do something on the file page.
             this.openFile(`/file?id=${file.getId()}`)
             return false
         }
@@ -108,8 +110,7 @@ class FileManager {
     }
 
     private async doApiRequest() {
-        console.log(this.sortMethod)
-        this.files = await apiSearch({
+        const query: searchQuery = {
             Index: this.index,
             Count: this.file_count,
             TagWhitelist: this.tag_whitelist.length == 0 ? undefined : this.tag_whitelist,
@@ -117,7 +118,15 @@ class FileManager {
             Path: this.query == "" ? undefined : this.query,
             Sort: this.sortMethod,
             SortReverse: this.sortReverse,
+        }
+        setCookie("search", JSON.stringify(query), {
+            Secure: true
         })
+        this.files = await apiSearch(query)
+        const idx = this.files.map((v) => {
+            return v.getId()
+        })
+        setCookie("file_idx", JSON.stringify(idx))
     }
 
     public async refresh() {
@@ -127,9 +136,9 @@ class FileManager {
         await this.doApiRequest()
         // Clear table
         this.table.innerHTML = ""
-        this.files.forEach(file => {
-            this.addMmFile(file)
-        })
+        for(let i = 0; i != this.files.length; i++) {
+            this.addMmFile(i)
+        }
         this.index = this.file_count
     }
 
@@ -139,9 +148,9 @@ class FileManager {
         await this.doApiRequest()
         // Clear table
         this.table.innerHTML = ""
-        this.files.forEach(file => {
-            this.addMmFile(file)
-        })
+        for(let i = 0; i != this.files.length; i++) {
+            this.addMmFile(i)
+        }
         this.index += this.file_count
     }
 
@@ -216,11 +225,36 @@ class FileManager {
     private iframe = document.getElementById("modalDisplay") as HTMLIFrameElement
 
     public openFile(url: string) {
+        console.log(`Open: ${url}`)
         if(this.modalMode) {
             this.modal.style.display = "flex"
             this.iframe.src = url
         } else {
             window.location.href = url
+        }
+    }
+
+    public setSearchQuery(qr: searchQuery) {
+        if(qr.Path) {
+            this.setQuery(qr.Path)
+        }
+        if(qr.TagWhitelist) {
+            this.setWhitelistTags(qr.TagWhitelist)
+        }
+        if(qr.TagBlacklist) {
+            this.setBlacklistTags(qr.TagBlacklist)
+        }
+        if(qr.Index) {
+            this.index = qr.Index
+        }
+        if(qr.Count) {
+            this.setCount(qr.Count)
+        }
+        if(qr.Sort) {
+            this.setSortMethod(qr.Sort)
+        }
+        if(qr.SortReverse) {
+            this.sortReverse = qr.SortReverse
         }
     }
 }
@@ -253,7 +287,7 @@ window.onload = () => {
     openInNewPage.onclick = () => {
         fh.openInNewTab = !fh.openInNewTab
         const paths = document.getElementsByClassName("path")
-        for(let i = 0; i != paths.length; i++) {
+        for(const i in paths) {
             if(fh.openInNewTab) {
                 // Open in new tab
                 (paths[i] as HTMLAnchorElement).target = "_blank"
@@ -261,6 +295,29 @@ window.onload = () => {
                 // Open in this tab
                 (paths[i] as HTMLAnchorElement).target = ""
             }
+        }
+    }
+    const search = getCookie("search")
+    if(search) {
+        const opts: searchQuery = JSON.parse(search)
+        fh.setSearchQuery(opts)
+        if(opts.Path) {
+            queryinput.value = opts.Path
+        }
+        if(opts.Sort) {
+            sortMethod.value = opts.Sort
+        }
+        if(opts.TagWhitelist) {
+            wltaginput.value = opts.TagWhitelist.join(",")
+        }
+        if(opts.TagBlacklist) {
+            bltaginput.value = opts.TagBlacklist.join(",")
+        }
+        if(opts.Count) {
+            count.value = `${opts.Count}`
+        }
+        if(opts.SortReverse) {
+            sortReverse.checked = opts.SortReverse
         }
     }
     submitbutton.onclick = () => {

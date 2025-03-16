@@ -25,7 +25,8 @@ go.work.sum
 .env
 
 # Testing databases & Other test files
-.db
+*.db
+*.bak
 log
 
 # Vs Code info

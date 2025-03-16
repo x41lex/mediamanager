@@ -67,15 +67,15 @@ const (
 
 // A new search query, leaves values unfilled and they wont be used
 type SearchQuery struct {
-	Path          string     // File path
+	Path          string     // File path, search with a sql LIKE
 	PathRe        string     // File path Regex search.
-	WhitelistTags []string   // Tags that must exist
-	BlacklistTags []string   // Tags that cannot exist
+	WhitelistTags []string   // Tags that must exist, tags must be exact.
+	BlacklistTags []string   // Tags that cannot exist, tags must be exact.
 	Count         int64      // Max number of results to get. Default: 50
-	Index         int64      // Index to get them at
+	Index         int64      // Index to start getting files at.
 	SortBy        SortMethod // Sorting method
 	SortReverse   bool       // Sort by DESC instead of ASC
-	Hash          string     // Search by hash, or "NULL" to search for values with no hashes.
+	Hash          string     // Search by hash, or "NULL" to search for values with no hashes, if empty ignore this.
 }
 
 // File Database

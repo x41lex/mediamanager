@@ -1,0 +1,51 @@
+{
+    "delete": {
+        "operationId": "deletetag",
+        "summary": "Delete a tag",
+        "description": "Delete a tag from the database & all files with it",
+        "security": [],
+        "parameters": [
+            {
+                "name": "tag",
+                "in": "query",
+                "description": "Tag to delete",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "The tag was found and deleted",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "400": {
+                "description": "The tag wasn't deleted",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value" :{
+                                    "Code": 400,
+                                    "Data": "Failed to remove tag"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

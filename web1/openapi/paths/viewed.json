@@ -1,0 +1,51 @@
+{
+    "post": {
+        "operationId": "viewed",
+        "summary": "Update a files last viewed time",
+        "description": "Update a files last viewed time",
+        "security": [],
+        "parameters": [
+            {
+                "name": "id",
+                "in": "query",
+                "description": "File ID to update last viewed time of",
+                "required": true,
+                "schema": {
+                    "type": "integer"
+                }
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "The date was updated",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "File not found",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value" :{
+                                    "Code": 404,
+                                    "Data": "File not found"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

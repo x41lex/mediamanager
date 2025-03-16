@@ -1,0 +1,55 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "MediaManager",
+        "description": "MediaManager API",
+        "version": "3.1r4",
+        "license": {
+            "name": "GPLv3",
+            "url": "https://www.gnu.org/licenses/gpl-3.0.en.html#license-text"
+        }
+    },
+    "servers": [
+        {
+            "url": "https://host/api"
+        }
+    ],
+    "paths": {
+        "/1/content": {
+            "$ref": "paths/content.json"
+        },
+        "/1/files": {
+            "$ref": "paths/files.json"
+        },
+        "/1/update": {
+            "$ref": "paths/update.json"
+        },
+        "/1/search": {
+            "$ref": "paths/search.json"
+        },
+        "/1/deletetag": {
+            "$ref": "paths/deletetag.json"
+        },
+        "/1/deletefile": {
+            "$ref": "paths/deletefile.json"
+        },
+        "/1/tags": {
+            "$ref": "paths/tags.json"
+        },
+        "/1/addtag": {
+            "$ref": "paths/addtag.json"
+        },
+        "/1/viewed": {
+            "$ref": "paths/viewed.json"
+        },
+        "/1/status": {
+            "$ref": "paths/status.json"
+        },
+        "/1/list": {
+            "$ref": "paths/filelist.json"
+        },
+        "/1/random": {
+            "$ref": "paths/random.json"
+        }
+    }
+}

@@ -1,0 +1,48 @@
+{
+    "get": {
+        "operationId": "ramdomfile",
+        "deprecated": true,
+        "summary": "Get a random file",
+        "description": "**Deprecated. Use the Search api instead.** Get a random file from the database",
+        "security": [],
+        "responses": {
+            "200": {
+                "description": "A file",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "Code": {
+                                    "type": "integer",
+                                    "default": 200
+                                },
+                                "Data": {
+                                    "$ref": "../schemas/file.json"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": {
+                                        "Id": 0,
+                                        "Path": "MyFile",
+                                        "Tags": [
+                                            "Test-Tag1",
+                                            "Test-Tag2"
+                                        ],
+                                        "LastViewed": "2025-03-11T22:09:23-06:00",
+                                        "Stars": 4,
+                                        "Size": 173020
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

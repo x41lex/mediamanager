@@ -61,6 +61,18 @@ export class MMFile {
     getContentUri() {
         return `/api/1/content?id=${this.file.Id}`;
     }
+    getContent() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                let data = yield fetch(this.getContentUri());
+                if (data.status != 200) {
+                    reject(`bad status code ${data.statusText}`);
+                }
+                let txt = yield data.text();
+                resolve(txt);
+            }));
+        });
+    }
     copy() {
         // Copy the api file
         let newFile = {
@@ -212,7 +224,7 @@ export function apiUpdateFile(file, oldFile) {
                     form.append("RemTags", element);
                 }
             });
-            console.log("Sending update");
+            console.log(form);
             apiRequest(`/api/1/update`, "POST", form).then((_) => {
                 console.log("OK");
                 resolve();
@@ -406,17 +418,78 @@ export function apiGetRandomFile() {
         }));
     });
 }
+/**
+ * @deprecated
+ * @returns
+ */
 export function apiGetVersion() {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-            const file = yield apiRequest("/api/1/version");
+            let status = yield apiGetStatus();
+            console.log(status);
+            console.log("apiGetVersion, ", status.VersionInfo);
+            resolve(status.VersionInfo);
+            return;
+        }));
+    });
+}
+export function apiGetStatus() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            const file = yield apiRequest("/api/1/status");
             if (file.Code == 200) {
+                console.log("apiGetStatus, ", file.Data);
                 resolve(file.Data);
-                return;
             }
             else {
                 reject();
             }
         }));
     });
+}
+export function getCookie(name) {
+    let cooks = document.cookie.split(" ");
+    for (const c of cooks) {
+        const sp1 = c.split(";");
+        const sp2 = sp1[0].split("=");
+        if (sp2[0] == name) {
+            return sp2[1];
+        }
+    }
+    return null;
+}
+export function setCookie(name, value, opts) {
+    let cook = `${name}=${value};`;
+    if (opts) {
+        if (opts.MaxAge) {
+            cook += `max-age=${opts.MaxAge}`;
+        }
+        if (opts.Partitioned) {
+            cook += "partitioned;";
+        }
+        if (opts.Expires) {
+            cook += `expires=${opts.Expires.toUTCString()};`;
+        }
+        if (opts.Secure) {
+            cook += "secure;";
+        }
+        if (opts.SameSite) {
+            cook += "samesite;";
+        }
+        if (opts.Path) {
+            if (opts.Path == "") {
+                cook += "path=/;";
+            }
+            else {
+                cook += `path=${opts.Path};`;
+            }
+        }
+    }
+    else {
+        cook += "path=/;";
+    }
+    document.cookie = cook;
+}
+export function deleteCookie(name) {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT`;
 }

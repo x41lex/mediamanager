@@ -1,0 +1,51 @@
+{
+    "post": {
+        "operationId": "addtag",
+        "summary": "Add a tag",
+        "description": "Add a tag to the database",
+        "security": [],
+        "parameters": [
+            {
+                "name": "tag",
+                "in": "query",
+                "description": "Tag to add",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "The tag was added",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "400": {
+                "description": "The tag wasn't addded",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value" :{
+                                    "Code": 400,
+                                    "Data": "Failed to add tag"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

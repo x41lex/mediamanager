@@ -51,6 +51,10 @@ type AccountConfigValue struct {
 // Parse and execute web
 func ParseWeb(a *ArgList, p *arg.Parser) {
 	// Verify arguments are correct
+	if isPortable && a.Web.LiveUpdate {
+		p.FailSubcommand("--live cannot be used on a portable install", "web")
+		return
+	}
 	if a.Web.TlsCert != "" && a.Web.TlsKey == "" {
 		p.FailSubcommand("--cert must be used with --key", "web")
 		return
@@ -155,25 +159,4 @@ func ParseWeb(a *ArgList, p *arg.Parser) {
 	default:
 		panic(fmt.Sprintf("MediaManager: Version '%d' was allowed through argument check, but not implemented.", a.Web.ApiVersion))
 	}
-}
-
-func ParseWeb2(a *ArgList, p *arg.Parser) {
-	err := a.Web.Verify()
-	if err != nil {
-		p.FailSubcommand(err.Error(), "web")
-		return
-	}
-	// Parse a address is one was not provided
-	if a.Web.Address == "" {
-		// Get local address
-		s, err := net.Dial("udp", "1.1.1.1:1")
-		if err != nil {
-			p.FailSubcommand(fmt.Sprintf("Failed to resolve local IP, set one using -a/--address (Error: %s)", err))
-			return
-		}
-		a.Web.Address = strings.Split(s.LocalAddr().String(), ":")[0] + ":5555"
-		s.Close()
-	}
-	// Load accounts
-
 }

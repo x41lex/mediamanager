@@ -12,7 +12,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
  *
  * @todo Error handling popups.
  */
-import { apiGetFile, apiGetContentUri, apiGetFileContentType, apiUpdateFile, apiGetTags, apiUpdateFileViewed, apiGetCollection, apiGetRandomFile } from "./api.js";
+import { apiGetFile, apiGetContentUri, apiGetFileContentType, apiUpdateFile, apiGetTags, apiUpdateFileViewed, apiGetCollection, apiGetRandomFile, getCookie } from "./api.js";
 /**
  * Id of the current file, or -1 if we're using collection.
  * @todo Replace with file, or just remove.
@@ -130,7 +130,6 @@ function showFullCollection() {
         // Get collection name
         let cName = "";
         for (const tag of collection[0].getTags()) {
-            console.log(tag);
             if (tag.startsWith("collection:")) {
                 cName = tag.split(":")[1];
                 break;
@@ -193,7 +192,6 @@ function setupTags(file) {
             let element = document.createElement("a");
             element.classList.add("tag");
             let sp = t.split(":");
-            console.log(sp);
             if (sp.length > 1) {
                 if (sp[0] == "author") {
                     element.classList.add("author");
@@ -367,12 +365,21 @@ function createFileElement(file, addHiddenTitle = false, expandedImages = false)
         name.textContent = file.getPath();
         ourDiv.appendChild(name);
     }
-    // Create a source
-    let source = document.createElement("source");
-    source.id = "media_src";
-    source.src = apiGetContentUri(file.getId(), false);
     // Get our expected content type
     apiGetFileContentType(file.getId()).then((v) => {
+        if (v.startsWith("application/octet-stream") || v.startsWith("text/plain")) {
+            let p = document.createElement("p");
+            p.id = "text";
+            file.getContent().then((v) => {
+                p.textContent = v;
+            });
+            ourDiv.appendChild(p);
+            return;
+        }
+        // Create a source
+        let source = document.createElement("source");
+        source.id = "media_src";
+        source.src = apiGetContentUri(file.getId(), false);
         if (v.startsWith("image")) {
             // Create a image 
             let image = document.createElement("img");
@@ -488,6 +495,7 @@ function updateFile(file) {
         mFile.setStars(set_to);
         // Re render the tags
         renderTags();
+        console.log(`Updating file`, mFile, file);
         // Send update & update the fil
         yield apiUpdateFile(mFile, file);
     });
@@ -574,6 +582,35 @@ function setupFile(file, render = true) {
         };
     });
 }
+function setNextAndPrev(id) {
+    const indexs = getCookie("file_idx");
+    if (!indexs) {
+        return;
+    }
+    const jIdx = JSON.parse(indexs);
+    const idx = jIdx.indexOf(Number(id));
+    if (idx == -1) {
+        console.error(`file_idx cookie failed to find file id`);
+        return;
+    }
+    if (idx > 0) {
+        const backButton = document.getElementById("go_back");
+        backButton.disabled = false;
+        backButton.onclick = () => {
+            window.location.href = `/file?id=${jIdx[idx - 1]}`;
+        };
+        // TODO: Check if the search query provided in cookie "search" .Index is not 0, if its not zero we can do the reverse DB query and put it in front of this array
+        // (Maybe remove all but the first one from old array?)
+    }
+    if ((idx + 1) < jIdx.length) {
+        const nextButton = document.getElementById("go_next");
+        nextButton.disabled = false;
+        nextButton.onclick = () => {
+            window.location.href = `/file?id=${jIdx[idx + 1]}`;
+        };
+        // TODO: Make the next DB query based on "search" if we're out of data we stop, otherwise append it (Maybe remove all but the last one from the old array)
+    }
+}
 /**
  * Initial setup function
  * @returns
@@ -583,7 +620,6 @@ function setup() {
         let button = document.getElementById("random_button");
         button.onclick = () => {
             apiGetRandomFile().then(file => {
-                console.log(file);
                 window.location.href = `/file?id=${file.getId()}`;
             });
         };
@@ -597,6 +633,7 @@ function setup() {
         const urlParams = new URLSearchParams(window.location.search);
         // Figure out of it a collection, id or neither
         const id = urlParams.get("id");
+        setNextAndPrev(Number(id));
         const col = urlParams.get("collection");
         if (id == null && col == null) {
             alert("Expected a 'id' or 'collection' query parameter");
@@ -609,6 +646,14 @@ function setup() {
         let file = yield getFile();
         fileId = file.getId();
         setupFile(file);
+        document.getElementById("pop_out").onclick = () => {
+            var _a;
+            (_a = window.open(file.getContentUri() + "&update=false", "_blank")) === null || _a === void 0 ? void 0 : _a.focus();
+        };
+        document.getElementById("path").onclick = () => {
+            var _a;
+            (_a = window.open(file.getContentUri() + "&update=false", "_blank")) === null || _a === void 0 ? void 0 : _a.focus();
+        };
     });
 }
 window.onload = setup;

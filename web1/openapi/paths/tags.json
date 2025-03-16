@@ -1,0 +1,30 @@
+{
+    "get": {
+        "operationId": "gettags",
+        "summary": "Get all tags",
+        "description": "Get a list of all tags",
+        "security": [],
+        "responses": {
+            "200": {
+                "description": "Tags",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": [
+                                        "Tag1",
+                                        "Tag2",
+                                        "Tag3",
+                                        "Tag4"
+                                    ]   
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

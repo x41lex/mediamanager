@@ -1,0 +1,101 @@
+{
+    "get": {
+        "operationId": "files",
+        "summary": "Get info about files",
+        "description": "Gets info about given files",
+        "security": [],
+        "parameters": [
+            {
+                "name": "file",
+                "in": "query",
+                "description": "Deprecated, Use 'id' instead. Full path to file",
+                "explode": true,
+                "deprecated": true,
+                "required": false,
+                "schema": {
+                    "type": "string"
+                }
+            },
+            {
+                "name": "id",
+                "in": "query",
+                "description": "File id",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "format": "uint64"
+                }
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "A file was found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "Code": {
+                                    "type": "integer",
+                                    "default": 200
+                                },
+                                "Data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "../schemas/file.json"
+                                    }
+                                }
+                            }
+                        },
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": [
+                                        {
+                                            "Id": 0,
+                                            "Path": "MyFile",
+                                            "Tags": [
+                                                "Test-Tag1",
+                                                "Test-Tag2"
+                                            ],
+                                            "LastViewed": "2025-03-11T22:09:23-06:00",
+                                            "Stars": 4,
+                                            "Size": 173020
+                                        },
+                                        {
+                                            "Id": 50,
+                                            "Path": "VeryCoolFile",
+                                            "Tags": [
+                                                "Test-Tag55",
+                                                "Test-Tag2"
+                                            ],
+                                            "LastViewed": "2027-03-11T22:09:23-06:00",
+                                            "Stars": 2,
+                                            "Size": 173
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "A file wasn't found",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 404,
+                                    "Data": "Failed to find file by id '{id}'"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

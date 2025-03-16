@@ -1,0 +1,35 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "String": {
+            "description": "The string repersentation of this version as MAJOR.MINORrREVISION"
+        },
+        "CodeName": {
+            "description": "Code name of this version, just the song I was listening to when I was doing this update\n- Version 1: <a href=\"https://www.youtube.com/watch?v=TwZmtvD-Xgo\">Erase Me - Make Them Suffer</a>\n- Version 2: <a href=\"https://www.youtube.com/watch?v=FTgaNAZzFc8\">In The House Of Leaves - Ghost Atlas</a>\n- Version 3: <a href=\"https://www.youtube.com/watch?v=YBhDWJkM8Wg\">Ecstacy In Grief - Cane Hill</a>\n- Version 4: <a href=\"https://www.youtube.com/watch?v=oKxuiw3iMBE\">West Coast - Lana Del Rey</a>",
+            "enum": [
+                "EraseMe",
+                "InTheHouseOfLeaves",
+                "EcstacyInGrief",
+                "WestCoast"
+            ],
+            "default": "EcstacyInGrief"
+        },
+        "Major": {
+            "description": "Major version",
+            "type": "integer"
+        },
+        "Minor": {
+            "description": "Minor version",
+            "type": "integer"
+        },
+        "Revision": {
+            "description": "Revision",
+            "type": "integer"
+        },
+        "Metadata": {
+            "description": "Other metadata",
+            "type": ["object", "null"]
+        }
+    }
+}

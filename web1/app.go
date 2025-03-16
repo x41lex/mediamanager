@@ -27,6 +27,8 @@ func (a *DbApi1) initStuff(mux *http.ServeMux, serveFunc func(path string, conte
 	mux.Handle("/collection", serveFunc("web1/frontend/collection.html", contentTypeHtml))
 	mux.Handle("/css/collection.css", serveFunc("web1/frontend/collection.css", contentTypeCss))
 	mux.Handle("/js/collection.js", serveFunc("web1/js/collection.js", contentTypeJs))
+	// API Reference
+	mux.Handle("/api/1/docs", serveFunc("web1/frontend/redoc-static.html", contentTypeHtml))
 	// Home page
 	mux.Handle("/css/home.css", serveFunc("web1/frontend/home.css", contentTypeCss))
 	mux.Handle("/js/home.js", serveFunc("web1/js/home.js", contentTypeJs))

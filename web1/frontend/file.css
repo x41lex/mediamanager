@@ -277,3 +277,9 @@ img.hover-shadow {
     object-fit: contain;
     cursor: pointer;
 }
+
+#text {
+    border: solid #6272a4;
+    border-width: 1px;
+    color:#f2f2f2
+}

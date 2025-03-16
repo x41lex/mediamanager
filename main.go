@@ -13,6 +13,10 @@ const (
 	VersionString string = "1.4"
 )
 
+var (
+	isPortable bool = false
+)
+
 type ArgList struct {
 	// * GENERAL *
 	Version bool `arg:"-v,--version" help:"Show version and exit"`
@@ -64,6 +68,9 @@ func main() {
 		panic(fmt.Sprintf("MediaManager: args.LogType should have been verified, got unexpected value '%s'", args.LogType))
 	}
 	slog.SetDefault(logger)
+	if isPortable {
+		slog.Debug("Portable release")
+	}
 	// Actually do actions
 	switch {
 	case args.Database != nil:
@@ -76,8 +83,11 @@ func main() {
 		ParseImport(args, p)
 	case args.Version:
 		fmt.Printf("MediaManager & FileDb by Alex Strueby\n")
-		fmt.Printf("  MediaManager Version: %s\n", VersionString)
-		fmt.Printf("  FileDb Version: %s (%s)\n", filedb.FormatVersion(filedb.MajorVersion, filedb.MinorVersion, filedb.Revision), filedb.VersionCodeName)
+		fmt.Printf("  MediaManager Version: %s", VersionString)
+		if isPortable {
+			fmt.Printf(" PORTABLE")
+		}
+		fmt.Printf("\n  FileDb Version: %s (%s)\n", filedb.FormatVersion(filedb.MajorVersion, filedb.MinorVersion, filedb.Revision), filedb.VersionCodeName)
 		return
 	default:
 		p.Fail("A subcommand must be selected")

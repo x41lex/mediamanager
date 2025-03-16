@@ -1,0 +1,75 @@
+{
+    "post": {
+        "operationId": "status",
+        "summary": "Get staus info",
+        "description": "Get status info about the database and server",
+        "security": [],
+        "responses": {
+            "200": {
+                "description": "The date was updated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "Code": {
+                                    "description": "Test",
+                                    "type": "integer"
+                                },
+                                "Data": {
+                                    "$ref": "../schemas/status.json"
+                                }
+                            }
+                        },
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": {
+                                        "VersionInfo": {
+                                            "Database": {
+                                                "String": "3.1r2",
+                                                "CodeName": "EcstacyInGrief",
+                                                "Major": 3,
+                                                "Minor": 1,
+                                                "Revision": 2,
+                                                "Metadata": {
+                                                    "testData": 123,
+                                                    "Hello": "World!"
+                                                }
+                                            },
+                                            "FileDb": {
+                                                "String": "3.1r3",
+                                                "CodeName": "EcstacyInGrief",
+                                                "Major": 3,
+                                                "Minor": 1,
+                                                "Revision": 3,
+                                                "Metadata": null
+                                            }
+                                        },
+                                        "InSafeMode": false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "File not found",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 404,
+                                    "Data": "File not found"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

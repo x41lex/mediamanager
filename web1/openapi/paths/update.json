@@ -1,0 +1,61 @@
+{
+    "post": {
+        "operationId": "update",
+        "summary": "Update info about a file",
+        "description": "Update file info. If a tag in AddTags doesn't exist in the database it will be created as well.",
+        "security": [],
+        "requestBody": {
+            "description": "Post JSON data",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "Path": {
+                                "description": "File path to select",
+                                "type": "string",
+                                "deprecated": true
+                            },
+                            "Id": {
+                                "description": "File ID to modify",
+                                "type": "integer",
+                                "format": "uint64"
+                            },
+                            "Stars": {
+                                "description": "Update to this number of stars",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 5
+                            },
+                            "AddTags": {
+                                "description": "Tags to add to the file",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "RemTags": {
+                                "description": "Tags to remove from the file",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "examples": {
+                        "IdAllData": {
+                            "summary": "Test123",
+                            "value": {
+                                "Id": 1,
+                                "Stars": 3,
+                                "AddTags": ["Tag1", "Tag3"],
+                                "RemTags": ["Tag4", "Tag2"]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

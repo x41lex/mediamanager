@@ -3,7 +3,7 @@
  * 
  * @todo Error handling popups.
  */
-import { MMFile, apiGetFile, apiGetContentUri, apiGetFileContentType, apiUpdateFile, apiGetTags, apiUpdateFileViewed, apiAddTag, apiSearch, apiGetCollection, apiGetRandomFile } from "./api.js"
+import { MMFile, apiGetFile, apiGetContentUri, apiGetFileContentType, apiUpdateFile, apiGetTags, apiUpdateFileViewed, apiAddTag, apiSearch, apiGetCollection, apiGetRandomFile, getCookie } from "./api.js"
 
 /**
  * Data of a tag
@@ -131,7 +131,6 @@ async function showFullCollection() {
     // Get collection name
     let cName = ""
     for (const tag of collection[0].getTags()) {
-        console.log(tag)
         if (tag.startsWith("collection:")) {
             cName = tag.split(":")[1]
             break
@@ -194,7 +193,6 @@ async function setupTags(file: MMFile) {
         let element = document.createElement("a")
         element.classList.add("tag")
         let sp = t.split(":")
-        console.log(sp)
         if (sp.length > 1) {
             if (sp[0] == "author") {
                 element.classList.add("author")
@@ -356,12 +354,21 @@ function createFileElement(file: MMFile, addHiddenTitle = false, expandedImages 
         name.textContent = file.getPath()
         ourDiv.appendChild(name)
     }
-    // Create a source
-    let source = document.createElement("source") as HTMLSourceElement
-    source.id = "media_src"
-    source.src = apiGetContentUri(file.getId(), false)
     // Get our expected content type
     apiGetFileContentType(file.getId()).then((v) => {
+        if(v.startsWith("application/octet-stream") || v.startsWith("text/plain")) {
+            let p = document.createElement("p")
+            p.id = "text"
+            file.getContent().then((v) => {
+                p.textContent = v
+            })
+            ourDiv.appendChild(p)
+            return;
+        }
+        // Create a source
+        let source = document.createElement("source") as HTMLSourceElement
+        source.id = "media_src"
+        source.src = apiGetContentUri(file.getId(), false)
         if (v.startsWith("image")) {
             // Create a image 
             let image = document.createElement("img") as HTMLImageElement
@@ -472,6 +479,7 @@ async function updateFile(file: MMFile) {
     mFile.setStars(set_to)
     // Re render the tags
     renderTags()
+    console.log(`Updating file`, mFile, file)
     // Send update & update the fil
     await apiUpdateFile(mFile, file)
 }
@@ -557,6 +565,36 @@ async function setupFile(file: MMFile, render = true) {
     }
 }
 
+function setNextAndPrev(id: number) {
+    const indexs = getCookie("file_idx")
+    if(!indexs) {
+        return
+    }
+    const jIdx: number[] = JSON.parse(indexs)
+    const idx = jIdx.indexOf(Number(id))
+    if(idx == -1) {
+        console.error(`file_idx cookie failed to find file id`)
+        return
+    }
+    if (idx > 0) {
+        const backButton = document.getElementById("go_back") as HTMLButtonElement
+        backButton.disabled = false
+        backButton.onclick = () => {
+            window.location.href = `/file?id=${jIdx[idx-1]}`
+        }
+        // TODO: Check if the search query provided in cookie "search" .Index is not 0, if its not zero we can do the reverse DB query and put it in front of this array
+        // (Maybe remove all but the first one from old array?)
+    }
+    if ((idx+1) < jIdx.length) {
+        const nextButton = document.getElementById("go_next") as HTMLButtonElement
+        nextButton.disabled = false
+        nextButton.onclick = () => {
+            window.location.href = `/file?id=${jIdx[idx+1]}`
+        }
+        // TODO: Make the next DB query based on "search" if we're out of data we stop, otherwise append it (Maybe remove all but the last one from the old array)
+    }
+}
+
 /**
  * Initial setup function
  * @returns 
@@ -565,7 +603,6 @@ async function setup() {
     let button = document.getElementById("random_button") as HTMLButtonElement
         button.onclick = () => {
             apiGetRandomFile().then(file => {
-                console.log(file)
                 window.location.href = `/file?id=${file.getId()}`
             })
         }
@@ -579,6 +616,7 @@ async function setup() {
     const urlParams = new URLSearchParams(window.location.search)
     // Figure out of it a collection, id or neither
     const id = urlParams.get("id")
+    setNextAndPrev(Number(id))
     const col = urlParams.get("collection")
     if (id == null && col == null) {
         alert("Expected a 'id' or 'collection' query parameter")
@@ -590,7 +628,13 @@ async function setup() {
     }
     let file = await getFile()
     fileId = file.getId()
-    setupFile(file)
+    setupFile(file);
+    (document.getElementById("pop_out") as HTMLHeadElement).onclick = () => {
+        window.open(file.getContentUri() + "&update=false", "_blank")?.focus()
+    }
+    (document.getElementById("path") as HTMLButtonElement).onclick = () => {
+        window.open(file.getContentUri() + "&update=false", "_blank")?.focus()
+    }
 }
 
 window.onload = setup

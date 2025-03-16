@@ -33,9 +33,11 @@ type JsonEntry struct {
 }
 
 type JsonImport struct {
-	AddFileInfo bool
-	Dirs        map[string]JsonEntry
-	Files       map[string]JsonEntry
+	AddFileInfo         bool     // Add hash & sizes to files
+	Extensions          []string // By default extensions added are .jpg, .png, .jpeg, .gif, .mp3, .flac, .wav, .webm, .mp4, .mov, .m4v
+	NoDefaultExtensions bool
+	Dirs                map[string]JsonEntry
+	Files               map[string]JsonEntry
 }
 
 func ptermProgressBar(total int, ch <-chan int64, ctx context.Context) {
@@ -93,7 +95,7 @@ func importJson(db *filedb.FileDb, path string) {
 				return nil
 			}
 			// Check if we want this file imported
-			if !isImportableFile(path) {
+			if !isImportableFile(path, im.Extensions...) {
 				slog.Debug("Not importing non media", "Path", path)
 				return nil
 			}

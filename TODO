@@ -1,0 +1,169 @@
+# Todo - 4.0 (WestCoast)
+## The Goal of this update & MediaManager as a whole
+The goal of MediaManager remains largely the same as it was in 1.0, 2.0 & 3.0, though some things have changed while thinking about it.
+
+Accounts, which prior to this update seemed pointless are now being implemented, this is a departure from previous thinking, but as MediaManager has evolved it just makes sense now.
+
+This *does not* mean that MediaManager will become a entire file system with uploading, a required file structure or anything like that.
+
+Accounts make senes in MediaManager because the design is, and always has been that one file system hosts all the data and is the server, the filesystem itself is immutable, you cannot delete files (Apart from the `--removefromdisk` flag in `database` which is a QoL feature), the actual server & API itself doesn't modify the filesystem, it doesn't care what the layout looks like or anything like that. 
+
+Early on in 2.0 there was a 'Drop path' feature where text could be dropped into a designated folder on the filesystem through the web server, this feature was scrapped in 2.1 because it just didn't fit with the goals of MediaManager, that feature was tiny when compared to entire file uploads & was still removed as bloat.
+
+In the future you may be allowed (With a API permission) to run a designated `import` command (Maybe on a JSON file set while running / embedded in MediaManager?) but beyond that there is no plan to do anything beyond that, if you'd like these features MediaManager just isn't for you.
+
+Other things that'll never change because they're against the goals of MediaManager are
+* Anything that modifes files on disk in a way that they are duplicated, modified or moved.
+* Anything that requires a specific file structure.
+* Anything that allows users to upload, move or modify files on disk.
+
+The goals have always been this idea of someone who has a bunch of media stored, for instance TV shows, Movies, Sporting events (All legally, of course) and they want to host all this media for there entire house while also having extra features for sorting & favoriting media, while also helping in mitigating wasted space (Hashing & lastViewed help with this), this version was created to allow multiple people using the same MediaManager instance to favorite there own stuff, (Possibly there own tags, I'll need to think about it)
+
+## File names
+Instead of showing full paths MediaManager will instead be showing file names, this field will be displayed instead of the names being displayed now.
+
+During migration & by default this will be the final element of the path (For instance if you have: `/test/123/myfile.jpg` the name will be `myfile.jpg`)
+
+This change aims to make things look cleaner.
+
+## Accounts
+Users now have accounts, each account sets its own stars, last viewed time, users are also given api keys based on there permissions.
+
+There are a few types of acccount (generally)
+
+- 0: Guest: User cannot modify the database **AT ALL** including settings stars / last viewed time.
+- 1: User: User can set there own stars & last viewed times.
+- 2: Moderator: User can add/remove global file tags.
+- 3: Administrator: User can add/remove tags, files and users from the database.
+
+## API keys
+The api is largely moving to a v2 state (New endpoints will be on `/api/2/`), `/api/1/` will rely on cookies for now, but it should be expected to be removed.
+
+The API will have a rate limit of about 30 requests a minute, going above this will disable the API key for a few minutes.
+
+The API key should be provided in the request header.
+
+The API key can only provide info about its own accountm unless otherwise stated.
+
+API keys have the following permissions
+
+- read: Read content about file info & file content
+- user-write: Write user data (Example: stars, lastViewed)
+- global-read: Read info about any account (Example: stars, lastViewed)
+- global-modify: Modify global data (Example: file path, Global tags on files)
+- global-write: Write new data to the database (Example: Add/Remove tags, Remove files, Add/Remove users)
+- no-rate-limit: Removes the API rate limit
+- admin: Admin account, this should be used very sparingly. This user has all permissions current & future.
+
+### /content
+Requires: `read`
+
+### /info
+Replaces: `/files`
+
+Requires: `read`
+
+### /setstars
+Replaces: `/update` (Partially)
+
+Requires: `user-write`
+
+Same as `/1//update` but can only modify `Stars`
+
+### /update
+Requires: `global-modify`
+
+Remove `Stars` and `Path`.
+
+There is a new field `AddNonExistTags` to add tags in the `AddTags` field to the database, to use this feature you require `global-write`
+
+### /search
+Requires: `read`
+
+### /deletetag
+Requires: `global-write`
+
+### /deletefile
+Requires: `global-write`
+
+### /gettags
+Requires: `read`
+
+### /addtag
+Requires: `global-modify`
+
+### /viewed
+Requires: `user-write`
+
+### /status
+Requires: None
+
+Optionally takes a API key and returns info about the key
+
+### /removeuser
+Requires: `global-modify`
+
+Remove a user from the database
+
+### /modifyuser
+Requires: `global-modify`
+
+Modifies a user, changing permissions, if `user-write` is removed the users data is **not** removed from the database.
+
+### /readuser
+Requires: `global-read`
+
+Read data about any users files
+
+### /globalinfo
+Requires: `global-read`
+
+Read info about all users info about this file.
+
+This will provide the *latest* last viewed time, and average stars (You can exclude '0'/unset if you'd like) and number of users who marked this viewed / starred
+
+## Migration
+Because of the account changes during migration you must provide a 'destination' account, this is where all updated (stars, lastViewed) will go.
+
+## Database Changes
+- Add `STRICT` to all tables
+- Possibly remove locks on the database. (Look into it)
+
+## Other changes
+- Improved import speed, check the ensure the imported path is unique before hashing
+- Remove `pterm` replace with a custom progress bar
+- Rework most outputs
+- Ensure API checks that the method is correct
+- Logging added to more stuff
+- Testing more stuff
+
+## Checklist
+- [ ] [File names](#file-names)
+- [ ] [Accounts](#accounts)
+- [ ] [API keys](#api-keys)
+  - [ ] [/api/2/content](#content)
+  - [ ] [/api/2/info](#info)
+  - [ ] [/api/2/setstars](#setstars)
+  - [ ] [/api/2/update](#update)
+  - [ ] [/api/2/search](#search)
+  - [ ] [/api/2/deletetag](#deletetag)
+  - [ ] [/api/2/deletefile](#deletefile)
+  - [ ] [/api/2/gettags](#gettags)
+  - [ ] [/api/2/addtag](#addtag)
+  - [ ] [/api/2/viewed](#viewed)
+  - [ ] [/api/2/status](#status)
+  - [ ] [/api/2/removeuser](#removeuser)
+  - [ ] [/api/2/modifyuser](#modifyuser)
+  - [ ] [/api/2/readuser](#readuser)
+  - [ ] [/api/2/globalinfo](#globalinfo)
+- [ ] [Migration from 3.1r4 to 4.0r0](#migration)
+- [ ] [Database Changes](#database-changes)
+    - [ ] Add `STRICT` to all tables
+    - [ ] Possibly remove locks on the database (Look into it)
+- [ ] [Other changes](#other-changes)
+  - [ ] Improved import speed, check the ensure the imported path is unique before hashing
+  - [ ] Remove `pterm` replace with a custom progress bar
+  - [ ] Rework most outputs
+  - [ ] Ensure API checks that the method is correct
+  - [ ] Logging added to more stuff
+  - [ ] Testing more stuff

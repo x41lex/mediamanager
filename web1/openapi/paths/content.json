@@ -1,0 +1,78 @@
+{
+    "parameters": [
+        {
+            "name": "id",
+            "in": "query",
+            "description": "File id",
+            "required": true,
+            "schema": {
+                "type": "integer",
+                "format": "uint64"
+            }
+        }
+    ],
+    "get": {
+        "operationId": "content_get",
+        "security": [],
+        "summary": "Get files content",
+        "description": "Get content of a file",
+        "parameters": [
+            {
+                "name": "update",
+                "in": "query",
+                "description": "Update files last viewed time",
+                "required": false,
+                "schema": {
+                    "default": false,
+                    "type": "boolean"
+                }
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "OK - Full file content"
+            },
+            "404": {
+                "description": "File not found",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 404,
+                                    "Data": "file not found"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "head": {
+        "operationId": "content_head",
+        "security": [],
+        "summary": "Get files size & type",
+        "description": "Get content of a file",
+        "responses": {
+            "200": {
+                "description": "OK - File info in headers"
+            },
+            "404": {
+                "description": "File not found",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 404,
+                                    "Data": "file not found"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

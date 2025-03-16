@@ -1,0 +1,82 @@
+{
+    "delete": {
+        "operationId": "deletefile",
+        "summary": "Delete a file",
+        "description": "Delete a file from the database",
+        "security": [],
+        "parameters": [
+            {
+                "name": "id",
+                "in": "query",
+                "description": "File ID to delete",
+                "required": true,
+                "schema": {
+                    "type": "integer",
+                    "format": "uint64"
+                }
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "The file was found and deleted",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "400": {
+                "description": "The id parameter was invalid",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value" :{
+                                    "Code": 400,
+                                    "Data": "Failed to remove file"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "The file wasn't found",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value" :{
+                                    "Code": 404,
+                                    "Data": "Failed to remove file"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "500": {
+                "description": "The file wasn't removed",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value" :{
+                                    "Code": 500,
+                                    "Data": "Failed to remove file"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

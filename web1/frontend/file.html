@@ -10,16 +10,20 @@
     <label for="col_names">Show names</label>
     <input type="checkbox" name="col_names" id="col_show_names">
 </div>
-<!--
-    TODO: 
-      Navigate through image (Maybe)
-      Update & Display tags better
-    -->
-<div id="mediaContainer">
+<div>
+    <button id="go_back" disabled>
+        Prev
+    </button>
+    <button id="go_next" disabled>
+        Next
+    </button>
+    <div id="mediaContainer">
 
+    </div>
 </div>
 <div id="controls">
     <button id="viewed">Mark Viewed</button>
+    <button id="pop_out">Pop out</button>
     <div id="author_div" hidden>
         <a>Author:</a>
         <span id="author_tags"></span>

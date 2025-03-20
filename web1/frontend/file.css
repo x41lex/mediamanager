@@ -283,3 +283,8 @@ img.hover-shadow {
     border-width: 1px;
     color:#f2f2f2
 }
+
+.tag-box {
+    display: flex; /* Use flexbox for layout */
+    flex-wrap: wrap; /* Allow the items to wrap onto the next line */
+}

@@ -44,6 +44,8 @@ var colIndex = 0
  * @todo Remove globals, add whatever error handling were going to use
  */
 async function loadCollection(name: string, showFull = false, author = false) {
+    const title = document.getElementById("file_name") as HTMLTitleElement
+    title.text = `Collection: ${name}`
     if (collection.length > 0) {
         // If the collection isn't empty its already been loaded
         console.error("Attempted to reload loaded collection")
@@ -503,10 +505,13 @@ async function updateFile(file: MMFile) {
  */
 async function setupFile(file: MMFile, render = true) {
     // Setup file data
+    const title = document.getElementById("file_name") as HTMLTitleElement
     const lastView = document.getElementById("last_view") as HTMLAnchorElement
     const size = document.getElementById("size") as HTMLAnchorElement
     const path = document.getElementById("path") as HTMLHeadElement
     const container = document.getElementById("mediaContainer") as HTMLDivElement
+    const pathSplit = file.getPath().split(/[\/\\]/)
+    title.text = `${pathSplit[pathSplit.length-1]}`
     path.textContent = file.getPath()
     // Setup tags
     await setupTags(file)

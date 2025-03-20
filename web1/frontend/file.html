@@ -2,6 +2,7 @@
 <html>
 <link rel="stylesheet" href="/css/file.css">
 <script src="/js/file.js" type="module"></script>
+<title id="file_name">File</title>
 <header>
     <h1>File Viewer (Alpha)</h1>
     <h2 id="path"></h2>
@@ -43,8 +44,7 @@
     <a id="size"></a><br>
     <a id="last_view"></a><br>
     <a>Add Tags</a>
-    <span id="all_tags">
-    </span><br>
+    <div class="tag-box" id="all_tags"></div><br>
     <select id="stars">
         <option id="stars_5" value="5">5 Stars</option>
         <option id="stars_4" value="4">4 Stars</option>
@@ -69,4 +69,5 @@
     </label><br>
     <button id="random_button">Random file</button>
 </div>
+
 </html>

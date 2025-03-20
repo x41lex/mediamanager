@@ -39,6 +39,8 @@ var colIndex = 0;
  */
 function loadCollection(name, showFull = false, author = false) {
     return __awaiter(this, void 0, void 0, function* () {
+        const title = document.getElementById("file_name");
+        title.text = `Collection: ${name}`;
         if (collection.length > 0) {
             // If the collection isn't empty its already been loaded
             console.error("Attempted to reload loaded collection");
@@ -521,10 +523,13 @@ function updateFile(file) {
 function setupFile(file, render = true) {
     return __awaiter(this, void 0, void 0, function* () {
         // Setup file data
+        const title = document.getElementById("file_name");
         const lastView = document.getElementById("last_view");
         const size = document.getElementById("size");
         const path = document.getElementById("path");
         const container = document.getElementById("mediaContainer");
+        const pathSplit = file.getPath().split(/[\/\\]/);
+        title.text = `${pathSplit[pathSplit.length - 1]}`;
         path.textContent = file.getPath();
         // Setup tags
         yield setupTags(file);

@@ -214,6 +214,7 @@ async function setupTags(file: MMFile) {
     });
 }
 
+
 /**
  * Re-render the tags on the file, call on any updates
  */
@@ -232,67 +233,77 @@ async function renderTags() {
     authorTagE.innerHTML = ""
     collectionTagE.innerHTML = ""
     tagList.forEach(td => {
-        if (td.Value.includes(":")) {
-            // Metadata
-            if (td.Value.startsWith("author:")) {
-                // Author data
-                td.Element.innerText = td.Value.split(":")[1]
-                if (td.IsFileTag) {
+        // If we've already rendered this tags somewhere.
+        let alreadyRender = false
+        if(td.Value.includes(":")) {
+            // Metadata - we render is special
+            if(td.Value.startsWith("author:")) {
+                if(td.IsFileTag) {
+                    // We always render file tags
                     authorTagE.appendChild(td.Element)
                     authorDiv.hidden = false
-                    return
-                }
-                if(!showAuthors) {
+                    alreadyRender = true
+                } else if (!showAuthors) {
+                    // Don't show this in the selection box if authors aren't selected
                     return
                 }
             } else if (td.Value.startsWith("collection:")) {
-                // Collection data
-                td.Element.innerText = td.Value.split(":")[1]
-                if (td.IsFileTag) {
+                // Idk what this does...
+                if(td.IsFileTag) {
+                    // Always render file tags
                     loadCollection(td.Value.split(":")[1])
                     collectionTagE.appendChild(td.Element)
                     colDiv.hidden = false
-                }
-                if(!showCollections) {
+                    alreadyRender = true
+                } else if (!showCollections) {
+                    // Don't show this in the selection box if collections aren't selected
                     return
                 }
-            } else if(td.Value.startsWith("colindex:")) {
+            } else if (td.Value.startsWith("colindex:")) {
+                // Collection index
                 const colIndexA = document.getElementById("col_index") as HTMLAnchorElement
                 colIndexA.classList.add("tag")
                 colIndexA.classList.add("metadata")
                 colIndexA.text = `${td.Value.split(":")[1]}`
-                return
+                alreadyRender = true
             } else {
                 // Other metadata
                 console.log(`Unknown tag namespace: ${td.Value}`)
-                return
             }
         }
+        // Handle anything
+        // Remove add_tag and rem_tag if its cached.
         td.Element.classList.remove("add_tag", "rem_tag")
-        if (td.IsFileTag) {
+        if(td.IsFileTag) {
+            // Render these in the 'tags' section
             td.Element.onclick = () => {
+                // These exist on the file already - we need to see if we need to remove them
                 if (td.Element.classList.contains("rem_tag")) {
+                    // If we click it and its in the 'remove' we dont do that
                     td.Element.classList.remove("rem_tag")
-                    //td.Element.classList.add("tag")
                 } else {
-                    //td.Element.classList.remove("tag")
+                    // Otherwise we add it
                     td.Element.classList.add("rem_tag")
                 }
             }
-            fileTagE.appendChild(td.Element)
+            if(!alreadyRender) {
+                fileTagE.appendChild(td.Element)
+            }
         } else {
             td.Element.onclick = () => {
+                // These dont exist on the file, add them if clicked.
                 if (td.Element.classList.contains("add_tag")) {
                     td.Element.classList.remove("add_tag")
-                    //td.Element.classList.add("tag")
                 } else {
-                    //td.Element.classList.remove("tag")
                     td.Element.classList.add("add_tag")
                 }
             }
-            allTagE.appendChild(td.Element)
+            if(!alreadyRender) {
+                allTagE.appendChild(td.Element)
+            }
         }
-    });
+    })
+    return
 }
 
 /**

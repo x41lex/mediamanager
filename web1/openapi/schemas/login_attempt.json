@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "Success": {
+            "description": "Was this login successful",
+            "type": "boolean"
+        },
+        "ErrorMessage": {
+            "description": "If 'Succcess' is false this is the reason the login failed",
+            "type": "string"
+        },
+        "Username": {
+            "description": "Username used for login, or empty if no username was provided",
+            "type": "string"
+        },
+        "LoggedInAt": {
+            "description": "When the attempt was made",
+            "type": "number"
+        },
+        "LoggedInAtString": {
+            "description": "When the attempt was made",
+            "type": "string",
+            "format": "RFC 3339",
+            "default": "1969-12-31T17:00:00Z"
+        },
+        "IpConnectedFrom": {
+            "description": "IP the attempt was from",
+            "type": "string",
+            "format": "ipv4|ipv6"
+        },
+        "UserAgent": {
+            "description": "User agent on this attempt",
+            "type": "string"
+        }
+    }
+}

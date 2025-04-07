@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "Id": {
+            "description": "Cookie ID",
+            "type": "number"
+        },
+        "Username": {
+            "description": "Username used for login",
+            "type": "string"
+        },
+        "LoggedInAt": {
+            "description": "When the account logged in",
+            "type": "number"
+        },
+        "LoggedInAtString": {
+            "description": "When the account logged in",
+            "type": "string",
+            "format": "RFC 3339",
+            "default": "1969-12-31T17:00:00Z"
+        },
+        "IpConnectedFrom": {
+            "description": "IP the cookie was created for",
+            "type": "string",
+            "format": "ipv4|ipv6"
+        },
+        "UserAgent": {
+            "description": "User agent on this attempt",
+            "type": "string"
+        }
+    }
+}

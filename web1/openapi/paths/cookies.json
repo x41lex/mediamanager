@@ -1,0 +1,65 @@
+{
+    "get": {
+        "operationId": "cookies",
+        "summary": "Get auth info",
+        "description": "Get authorization info about connected accounts",
+        "security": [],
+        "parameters": [],
+        "responses": {
+            "200": {
+                "description": "Authorization info",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "Code": {
+                                    "type": "integer",
+                                    "default": 200
+                                },
+                                "Data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "../schemas/cookies.json"
+                                    }
+                                }
+                            }
+                        },
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": [
+                                        {
+                                            "Id": 0,
+                                            "Username": "test",
+                                            "LoggedInAt": 1743573253,
+                                            "LoggedInAtString": "2025-04-02T05:54:13Z",
+                                            "IpConnectedFrom": "127.0.0.1:6013",
+                                            "UserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "Authorization is disabled",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 400,
+                                    "Data": "Not using authorization"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

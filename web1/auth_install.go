@@ -15,7 +15,7 @@ func NewLoginManager(mux *http.ServeMux, live bool) *LoginManager {
 		accountLock: sync.Mutex{},
 		accounts:    make([]*account, 0),
 		cookieLock:  sync.Mutex{},
-		cookies:     make([]*cookie, 0),
+		cookies:     make(map[int]*cookie),
 	}
 	var err error
 	lm.loginPageData, err = os.ReadFile("web1/frontend/login.html")

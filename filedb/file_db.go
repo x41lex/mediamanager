@@ -208,6 +208,7 @@ func (d *FileDb) putFilesInDb(tx *sql.Tx, files ...*File) (failed []*ImportError
 	d.lock.Lock()
 	defer d.lock.Unlock()
 	for _, f := range files {
+		f.path = strings.ReplaceAll(f.path, "\\", "/")
 		// Remove id
 		f.id = 0
 		// We're ok if this file already has a ID (Indicating it likely exists in the database) because it would fail the path unique check, and if it doesn't its just a different file.

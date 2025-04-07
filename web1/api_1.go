@@ -716,6 +716,96 @@ func (a *DbApi1) GetStatus(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+type apiAccount struct {
+	Id               int
+	Username         string
+	LoggedInAt       int64
+	LoggedInAtString string
+	IpConnectedFrom  string
+	UserAgent        string
+}
+
+func (a *DbApi1) GetAccounts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		a.writeApiError(w, r, http.StatusMethodNotAllowed, "Must be a 'GET' request")
+		return
+	}
+	if a.lm == nil {
+		a.writeApiError(w, r, 404, "Not using authorization")
+		return
+	}
+	data := make([]apiAccount, 0)
+	for k, v := range a.lm.cookies {
+		data = append(data, apiAccount{
+			Id:               k,
+			Username:         v.AccountName,
+			LoggedInAt:       v.At.UTC().Unix(),
+			LoggedInAtString: v.At.UTC().UTC().Format(time.RFC3339),
+			IpConnectedFrom:  v.IpFrom,
+			UserAgent:        v.UserAgent,
+		})
+	}
+	a.writeApiData(w, r, data)
+}
+
+func (a *DbApi1) RemoveCookie(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		a.writeApiError(w, r, http.StatusMethodNotAllowed, "Must be a 'GET' request")
+		return
+	}
+	if a.lm == nil {
+		a.writeApiError(w, r, 404, "Not using authorization")
+		return
+	}
+	qr := r.URL.Query()
+	idStr := qr.Get("id")
+	if idStr == "" {
+		a.writeApiError(w, r, 400, "'id' query parameter must exist")
+		return
+	}
+	id, err := strconv.ParseInt(idStr, 0, 64)
+	if err != nil {
+		a.writeApiError(w, r, 400, fmt.Sprintf("Bad 'id' query parameter: %v", err))
+		return
+	}
+	a.lm.RemoveCookie(int(id))
+	a.writeApiData(w, r, nil)
+}
+
+type apiLoginAttempt struct {
+	Success          bool
+	ErrorMessage     string
+	Username         string
+	LoggedInAt       int64
+	LoggedInAtString string
+	IpConnectedFrom  string
+	UserAgent        string
+}
+
+func (a *DbApi1) LoginAttempts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		a.writeApiError(w, r, http.StatusMethodNotAllowed, "Must be a 'GET' request")
+		return
+	}
+	if a.lm == nil {
+		a.writeApiError(w, r, 404, "Not using authorization")
+		return
+	}
+	data := make([]apiLoginAttempt, 0)
+	for _, v := range a.lm.loginAttempts {
+		data = append(data, apiLoginAttempt{
+			Username:         v.AccoutName,
+			LoggedInAt:       v.At.UTC().Unix(),
+			LoggedInAtString: v.At.UTC().UTC().Format(time.RFC3339),
+			IpConnectedFrom:  v.Ip,
+			Success:          v.Success,
+			ErrorMessage:     v.ReasonFailed,
+			UserAgent:        v.UserAgent,
+		})
+	}
+	a.writeApiData(w, r, data)
+}
+
 func NewFileDbApi(db *filedb.FileDb, mux *http.ServeMux, lm *LoginManager) *DbApi1 {
 	api := &DbApi1{
 		db: db,
@@ -731,6 +821,10 @@ func NewFileDbApi(db *filedb.FileDb, mux *http.ServeMux, lm *LoginManager) *DbAp
 	mux.HandleFunc("/api/1/addtag", api.AddTag)
 	mux.HandleFunc("/api/1/viewed", api.UpdateFileDate)
 	mux.HandleFunc("/api/1/status", api.GetStatus)
+	// Test stuff
+	mux.HandleFunc("/api/1/cookies", api.GetAccounts)
+	mux.HandleFunc("/api/1/removecookie", api.RemoveCookie)
+	mux.HandleFunc("/api/1/loginattempts", api.LoginAttempts)
 	// Deprecated stuff below.
 	mux.HandleFunc("/api/1/list", api.GetFileList)
 	mux.HandleFunc("/api/1/random", api.GetRandomFile)

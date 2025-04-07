@@ -3,7 +3,7 @@
         "operationId": "filelist",
         "deprecated": true,
         "summary": "Get all files",
-        "description": "**Deprecated. Use the Search api instead.** Get all files from the database",
+        "description": "Use the <a href='#operation/search'>search endpoint</a> instead\n\n`/api/1/search?count=<COUNT>&index=<INDEX>`\n\nGet all files from the database",
         "security": [],
         "parameters": [
             {

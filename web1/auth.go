@@ -20,14 +20,28 @@ type cookie struct {
 	AccountName string
 	Value       string
 	At          time.Time
+	IpFrom      string
+	UserAgent   string
+}
+
+type loginAttempt struct {
+	AccoutName   string
+	At           time.Time
+	Ip           string
+	Success      bool
+	ReasonFailed string
+	UserAgent    string
 }
 
 type LoginManager struct {
-	accountLock   sync.Mutex
-	accounts      []*account
-	cookieLock    sync.Mutex
-	cookies       []*cookie
-	loginPageData []byte
+	accountLock       sync.Mutex
+	accounts          []*account
+	cookieLock        sync.Mutex
+	cookies           map[int]*cookie
+	cookieIndex       int
+	loginPageData     []byte
+	loginAttempts     []*loginAttempt
+	loginAttemptsLock sync.Mutex
 }
 
 func (l *LoginManager) CookieToAccount(cookie string) (string, error) {
@@ -82,33 +96,66 @@ func (l *LoginManager) addAccountCookie(w http.ResponseWriter, r *http.Request, 
 	cook := &cookie{
 		AccountName: account.Username,
 		At:          time.Now(),
+		IpFrom:      r.RemoteAddr,
+		UserAgent:   r.UserAgent(),
 	}
 	cook.Value = base64.StdEncoding.EncodeToString(buffer)
 	l.cookieLock.Lock()
 	defer l.cookieLock.Unlock()
-	l.cookies = append(l.cookies, cook)
+	l.cookies[l.cookieIndex] = cook
+	l.cookieIndex++
 	// Probably set more cookie values
 	http.SetCookie(w, &http.Cookie{
 		Name:   "filedb_account",
 		Value:  cook.Value,
-		Secure: true,
+		Secure: false,
 	})
 	return true
 }
 
 func (l *LoginManager) authPage(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
+		l.loginAttemptsLock.Lock()
+		defer l.loginAttemptsLock.Unlock()
+		l.loginAttempts = append(l.loginAttempts, &loginAttempt{
+			AccoutName:   "",
+			At:           time.Now().UTC(),
+			Ip:           r.RemoteAddr,
+			Success:      false,
+			ReasonFailed: fmt.Sprintf("Incorrect method '%s'", r.Method),
+			UserAgent:    r.UserAgent(),
+		})
 		w.WriteHeader(405)
 		return
 	}
 	user := r.PostFormValue("username")
 	if user == "" {
+		l.loginAttemptsLock.Lock()
+		defer l.loginAttemptsLock.Unlock()
+		l.loginAttempts = append(l.loginAttempts, &loginAttempt{
+			AccoutName:   "",
+			At:           time.Now().UTC(),
+			Ip:           r.RemoteAddr,
+			Success:      false,
+			ReasonFailed: "Missing 'username' value",
+			UserAgent:    r.UserAgent(),
+		})
 		w.WriteHeader(401)
 		w.Write([]byte("missing 'username' value"))
 		return
 	}
 	password := r.PostFormValue("password")
 	if password == "" {
+		l.loginAttemptsLock.Lock()
+		defer l.loginAttemptsLock.Unlock()
+		l.loginAttempts = append(l.loginAttempts, &loginAttempt{
+			AccoutName:   user,
+			At:           time.Now().UTC(),
+			Ip:           r.RemoteAddr,
+			Success:      false,
+			ReasonFailed: "Missing 'password' value",
+			UserAgent:    r.UserAgent(),
+		})
 		w.WriteHeader(401)
 		w.Write([]byte("missing 'password' value"))
 		return
@@ -124,6 +171,16 @@ func (l *LoginManager) authPage(w http.ResponseWriter, r *http.Request) {
 			if v.Password == password {
 				// Create cookie
 				if l.addAccountCookie(w, r, v) {
+					l.loginAttemptsLock.Lock()
+					defer l.loginAttemptsLock.Unlock()
+					l.loginAttempts = append(l.loginAttempts, &loginAttempt{
+						AccoutName:   user,
+						At:           time.Now().UTC(),
+						Ip:           r.RemoteAddr,
+						Success:      true,
+						ReasonFailed: "",
+						UserAgent:    r.UserAgent(),
+					})
 					r.Method = "GET"
 					w.Write([]byte(fmt.Sprintf("<!DOCTYPE html><style>body {background-color: #282a36;color: #f8f8f2;}</style><html><body><a href=\"%s\">Redirecting in 1 second if not click here.</a>\n<meta http-equiv=\"Refresh\" content=\"1; url='%s'\" /></body></html>", redirect, redirect)))
 					return
@@ -133,9 +190,29 @@ func (l *LoginManager) authPage(w http.ResponseWriter, r *http.Request) {
 			// Invalid password
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("invalid account"))
+			l.loginAttemptsLock.Lock()
+			defer l.loginAttemptsLock.Unlock()
+			l.loginAttempts = append(l.loginAttempts, &loginAttempt{
+				AccoutName:   user,
+				At:           time.Now().UTC(),
+				Ip:           r.RemoteAddr,
+				Success:      false,
+				ReasonFailed: "Invalid password",
+				UserAgent:    r.UserAgent(),
+			})
 			return
 		}
 	}
+	l.loginAttemptsLock.Lock()
+	defer l.loginAttemptsLock.Unlock()
+	l.loginAttempts = append(l.loginAttempts, &loginAttempt{
+		AccoutName:   user,
+		At:           time.Now().UTC(),
+		Ip:           r.RemoteAddr,
+		Success:      false,
+		ReasonFailed: "Invalid password",
+		UserAgent:    r.UserAgent(),
+	})
 	w.WriteHeader(http.StatusUnauthorized)
 	w.Write([]byte("invalid account"))
 }
@@ -170,12 +247,20 @@ func (l *LoginManager) AddAccount(user string, password string) error {
 	return nil
 }
 
+func (l *LoginManager) RemoveCookie(id int) error {
+	l.cookieLock.Lock()
+	defer l.cookieLock.Unlock()
+	delete(l.cookies, id)
+	return nil
+}
+
 func (l *LoginManager) loginPage(w http.ResponseWriter, r *http.Request) {
 	for _, c := range r.Cookies() {
 		if c.Name == "filedb_account" {
 			l.cookieLock.Lock()
 			defer l.cookieLock.Unlock()
 			for _, v := range l.cookies {
+				// TODO: Check IpFrom and User-Agent
 				if v.Value == c.Value {
 					slog.Debug("Found cookie")
 					// Why are we still on the login page...?

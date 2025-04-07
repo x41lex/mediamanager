@@ -1,0 +1,51 @@
+{
+    "get": {
+        "operationId": "removecookie",
+        "summary": "Remove a cookie",
+        "description": "Remove a cookie preventing further requests with the cookie",
+        "security": [],
+        "parameters": [
+            {
+                "name": "id",
+                "in": "query",
+                "description": "Cookie ID to delete",
+                "required": true,
+                "schema": {
+                    "type": "number"
+                }
+            }
+        ],
+        "responses": {
+            "200": {
+                "description": "The cookie was found and deleted",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 200,
+                                    "Data": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "Authorization is disabled",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "json": {
+                                "value": {
+                                    "Code": 400,
+                                    "Data": "Not using authorization"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

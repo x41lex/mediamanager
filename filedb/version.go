@@ -9,10 +9,10 @@ const MajorVersion int = 3
 
 // Changes that may change what values can be added and may make some values invalid, but the strucutre is the same. I.E Adding UNIQUE on a value, adding a new CHECK constraint, or
 // changes to the backend stuff that is largely abstracted. I.E db_info table
-const MinorVersion int = 1
+const MinorVersion int = 2
 
 // Bug fixes to the Go code that do not impact how the database works, but change now the go code interacts with it, but no changes in the database.
-const Revision int = 4
+const Revision int = 1
 
 // Version code name
 const VersionCodeName string = "EcstacyInGrief"

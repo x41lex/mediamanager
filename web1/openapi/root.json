@@ -3,7 +3,7 @@
     "info": {
         "title": "MediaManager",
         "description": "MediaManager API",
-        "version": "3.1r4",
+        "version": "3.2r1",
         "license": {
             "name": "GPLv3",
             "url": "https://www.gnu.org/licenses/gpl-3.0.en.html#license-text"
@@ -44,6 +44,15 @@
         },
         "/1/status": {
             "$ref": "paths/status.json"
+        },
+        "/1/cookies": {
+            "$ref": "paths/cookies.json"
+        },
+        "/1/removecookie": {
+            "$ref": "paths/removecookie.json"
+        },
+        "/1/loginattempts": {
+            "$ref": "paths/loginattempts.json"
         },
         "/1/list": {
             "$ref": "paths/filelist.json"

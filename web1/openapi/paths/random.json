@@ -3,7 +3,7 @@
         "operationId": "ramdomfile",
         "deprecated": true,
         "summary": "Get a random file",
-        "description": "**Deprecated. Use the Search api instead.** Get a random file from the database",
+        "description": "Use the <a href='#operation/search'>search endpoint</a> instead\n\n`/api/1/search?count=1&sort=random`\n\nGet a random file from the database",
         "security": [],
         "responses": {
             "200": {
